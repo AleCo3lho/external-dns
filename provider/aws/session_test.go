@@ -17,8 +17,46 @@ limitations under the License.
 package aws
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewSession(t *testing.T) {
+
+	type testCase[T interface {
+		session.Session
+	}] struct {
+		name    string
+		config  AWSSessionConfig
+		want    T
+		wantErr assert.ErrorAssertionFunc
+	}
+
+	tests := []testCase[session.Session]{
+		{
+			name:    "Sample test case",
+			config:  AWSSessionConfig{},
+			want:    session.Session{},
+			wantErr: assert.NoError,
+		},
+		// {
+		// 	name:    "Sample error test case",
+		// 	config:    AWSSessionConfig{},
+		// 	want:    session.Session{},
+		// 	wantErr: assert.Error,
+		// },
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewSession(tt.config)
+			if !tt.wantErr(t, err, fmt.Sprintf("NewSession(%v)", tt.config)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "NewSession(%v)", tt.config)
+		})
+	}
 }
